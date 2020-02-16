@@ -29,6 +29,42 @@ class HeroController extends ResourceController{
       }
       return  Response.ok(hero);
     } catch (e) {
+      return Response.badRequest(body: {"Erro": "Não possivel encontrar registro"});
+    }
+  }
+
+  @Operation.post()
+  Future<Response> createHero() async{
+    final Map<String, dynamic> body = await request.body.decode();
+    final query = Query<Hero>(context)..values.name = body['name'] as String;
+    final insertedHero = await query.insert();
+
+    return Response.ok(insertedHero); 
+  }
+
+  @Operation.put("id")
+  Future<Response> updateHero(@Bind.path("id") int id) async{
+    final Map<String, dynamic> body = await request.body.decode();
+    final query = Query<Hero>(context)..values.name = body['name'] as String
+    ..where((u)=>u.id).equalTo(id);
+    final updateHero = await query.update();
+
+    return Response.ok(updateHero);
+  }
+
+  @Operation.delete("id")
+  Future<Response> deleteHero(@Bind.path("id") int id) async{
+    final query = Query<Hero>(context)..where((u)=>u.id).equalTo(id);
+    final deleteHero = await query.delete();
+
+    final response = {
+      'msg':"Hero deletado com sucesso",
+      'success': true
+    };
+
+    if(deleteHero > 0){
+      return Response.ok(response);
+    }else{
       return Response.badRequest(body: {"Erro": "Não possivel executar"});
     }
   }
