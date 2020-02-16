@@ -8,16 +8,26 @@ class BackendChannel extends ApplicationChannel {
   @override
   Future prepare() async {
     logger.onRecord.listen((rec) => print("$rec ${rec.error ?? ""} ${rec.stackTrace ?? ""}"));
-    context = null;
+
+    final dataModel = ManagedDataModel.fromCurrentMirrorSystem();
+    final persistentStore =  PostgreSQLPersistentStore.fromConnectionInfo(
+      'postgres', 
+      'root', 
+      'localhost', 
+       5435, 
+      'dart'
+      );
+
+    context = ManagedContext(dataModel,persistentStore);
   }
   @override
   Controller get entryPoint {
     final router = Router();
 
     router
-      .route("/example")
+      .route("/dart")
       .linkFunction((request) async {
-        return Response.ok({"key": "value"});
+        return Response.ok({"info": "RestAPI construida com Dart e aqueduct."});
       });
 
     router
