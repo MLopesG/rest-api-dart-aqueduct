@@ -1,6 +1,11 @@
 import 'backend.dart';
 import 'controllers/HeroController.dart';
 
+class HeroConfig extends Configuration {
+  HeroConfig(String path): super.fromFile(File(path));
+  DatabaseConfiguration database;
+}
+
 class BackendChannel extends ApplicationChannel {
 
   ManagedContext context; 
@@ -9,14 +14,15 @@ class BackendChannel extends ApplicationChannel {
   Future prepare() async {
     logger.onRecord.listen((rec) => print("$rec ${rec.error ?? ""} ${rec.stackTrace ?? ""}"));
 
+    final config = HeroConfig(options.configurationFilePath);
     final dataModel = ManagedDataModel.fromCurrentMirrorSystem();
     final persistentStore =  PostgreSQLPersistentStore.fromConnectionInfo(
-      'postgres', 
-      'root', 
-      'localhost', 
-       5435, 
-      'dart'
-      );
+      config.database.username,
+      config.database.password,
+      config.database.host,
+      config.database.port,
+      config.database.databaseName
+    );
 
     context = ManagedContext(dataModel,persistentStore);
   }
